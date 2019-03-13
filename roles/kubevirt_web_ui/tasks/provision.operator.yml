@@ -66,7 +66,7 @@
       dest: "{{ mktemp.stdout }}/role_binding_extra_for_console.yaml"
   - name: Apply role bindings for openshift-console
     shell: "{{ cluster_command }} apply -f {{ mktemp.stdout }}/role_binding_extra_for_console.yaml"
-  when: ns_console != ""
+  when: ns_console is succeeded
 
 - name: Add Custom Resource Definition for operator
   shell: "{{ cluster_command }} apply -f {{ files_dir }}/crds/kubevirt_v1alpha1_kwebui_crd.yaml"
