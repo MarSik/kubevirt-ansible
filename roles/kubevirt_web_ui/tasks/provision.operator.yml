@@ -11,20 +11,22 @@
 ### End of preparation
 
 - name: Check if project for kubevirt-web-ui exists
-  shell: "{{ cluster_command }} projects -q | grep -w {{ kubevirt_web_ui_namespace }} | awk '{ print $1 }'"
+  shell: "{{ cluster_command }} get project {{ kubevirt_web_ui_namespace }}"
+  ignore_errors: true
   register: ns
 
 - name: Create project for kubevirt-web-ui
   shell: "{{ cluster_command }} new-project {{ kubevirt_web_ui_namespace }}"
-  when: ns.stdout == ""
+  when: ns is failed
 
 - name: Change project for kubevirt-web-ui
   shell: "{{ cluster_command }} project {{ kubevirt_web_ui_namespace }}"
-  when: ns.stdout != ""
+  when: ns is succeeded
 
 # Determine if we can gather facts from openshift-console ConfigMap
 - name: Check if openshift-console project exists
-  shell: "{{ cluster_command }} projects -q | grep -w openshift-console | awk '{ print $1 }'"
+  shell: "{{ cluster_command }} get project openshift-console"
+  ignore_errors: true
   register: ns_console
 
 - name: Create service account
@@ -45,7 +47,7 @@
       dest: "{{ mktemp.stdout }}/role_extra_for_console.yaml"
   - name: Apply roles for openshift-console
     shell: "{{ cluster_command }} apply -f {{ mktemp.stdout }}/role_extra_for_console.yaml"
-  when: ns_console != ""
+  when: ns_console is succeeded
 
 - name: Add role bindings
   block:
